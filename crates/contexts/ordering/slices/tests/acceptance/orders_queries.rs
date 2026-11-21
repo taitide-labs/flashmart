@@ -12,7 +12,6 @@ use uuid::Uuid;
 use super::support::{base_time, test_router, test_state};
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn list_orders_requires_buyer_header_and_isolates_buyers(pool: PgPool) {
     let clock = Arc::new(FixedClock::new(base_time()));
     let (state, _) = test_state(pool, clock);
