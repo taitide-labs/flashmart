@@ -46,7 +46,6 @@ async fn list_orders_requires_buyer_header_and_isolates_buyers(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn get_order_returns_404_when_missing(pool: PgPool) {
     let clock = Arc::new(FixedClock::new(base_time()));
     let (state, _) = test_state(pool, clock);
