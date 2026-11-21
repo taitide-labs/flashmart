@@ -60,6 +60,7 @@ struct MockInventoryState {
     reservations: HashMap<ReservationId, (ItemId, i32, bool)>,
     reserve_calls: usize,
     release_calls: usize,
+    fail_release: bool,
 }
 
 #[derive(Clone)]
@@ -74,6 +75,10 @@ impl MockInventoryPort {
         Self {
             inner: Arc::new(Mutex::new(state)),
         }
+    }
+
+    fn set_fail_release(&self, fail: bool) {
+        self.inner.lock().unwrap().fail_release = fail;
     }
 
     fn available_stock(&self, item_id: ItemId) -> i32 {
@@ -148,6 +153,11 @@ impl InventoryPort for MockInventoryPort {
     ) -> Result<ReleaseStockOutcome, InventoryPortError> {
         let mut guard = self.inner.lock().unwrap();
         guard.release_calls += 1;
+        if guard.fail_release {
+            return Err(InventoryPortError::Unavailable(
+                "simulated release failure".to_owned(),
+            ));
+        }
         let (item_id, qty, released) = guard
             .reservations
             .get_mut(&req.reservation_id)
@@ -548,4 +558,63 @@ async fn handler_serializes_concurrent_quota_and_idempotency_races(pool: PgPool)
     .await
     .unwrap();
     assert_eq!(persisted_orders, 1);
+}
+
+#[sqlx::test(migrations = "../../../../migrations")]
+async fn compensate_release_surfaces_error_and_handler_preserves_domain_failure_when_release_fails(
+    pool: PgPool,
+) {
+    let now = base_time();
+    let item_id = ItemId::new(Uuid::from_u128(0xDDDD_0003));
+    let snapshot = sample_snapshot(item_id, ItemKind::Digital, 9900, 1);
+    let port = Arc::new(MockInventoryPort::with_item(snapshot));
+    let event_bus = Arc::new(InMemoryEventBus::new());
+    let clock: Arc<dyn Clock> = Arc::new(FixedClock::new(now));
+    let id_gen = Arc::new(SequenceIdGenerator::new(200));
+    let state = AppState::new(
+        pool,
+        clock,
+        id_gen,
+        port.clone() as Arc<dyn InventoryPort>,
+        event_bus,
+        Duration::minutes(15),
+    );
+
+    let buyer = BuyerId::try_new("buyer-release-err").unwrap();
+    let (status, _) = handler::handle(
+        &state,
+        PlaceOrderCommand {
+            buyer_id: buyer.clone(),
+            idempotency_key: IdempotencyKey::try_new("rel-k1").unwrap(),
+            item_id,
+            quantity: Quantity::try_new(1).unwrap(),
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(status, StatusCode::CREATED);
+
+    port.set_fail_release(true);
+    let direct_err = handler::compensate_release(&state, ReservationId::new(Uuid::new_v4()))
+        .await
+        .unwrap_err();
+    assert_eq!(
+        direct_err,
+        InventoryPortError::Unavailable("simulated release failure".to_owned())
+    );
+    assert_eq!(port.release_calls(), 1);
+
+    let err = handler::handle(
+        &state,
+        PlaceOrderCommand {
+            buyer_id: buyer,
+            idempotency_key: IdempotencyKey::try_new("rel-k2").unwrap(),
+            item_id,
+            quantity: Quantity::try_new(1).unwrap(),
+        },
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(err.code, "purchase_limit_exceeded");
+    assert_eq!(port.release_calls(), 2);
 }

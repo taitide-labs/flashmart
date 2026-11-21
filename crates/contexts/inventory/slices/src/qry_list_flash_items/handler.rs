@@ -9,32 +9,18 @@ use uuid::Uuid;
 use super::contract::{FlashItemListResponse, FlashItemSummary};
 
 #[derive(Debug, sqlx::FromRow)]
-struct FlashItemRow {
-    id: Uuid,
-    title: String,
-    description: String,
-    item_kind: String,
-    price_cents: i64,
-    currency: String,
-    total_stock: i32,
-    available_stock: i32,
-    per_user_limit: i32,
-    sale_starts_at: DateTime<Utc>,
-    sale_ends_at: DateTime<Utc>,
-}
-
-pub fn compute_window_status(
-    now: DateTime<Utc>,
-    sale_starts_at: DateTime<Utc>,
-    sale_ends_at: DateTime<Utc>,
-) -> WindowStatus {
-    if now < sale_starts_at {
-        WindowStatus::Upcoming
-    } else if now > sale_ends_at {
-        WindowStatus::Ended
-    } else {
-        WindowStatus::Active
-    }
+pub(super) struct FlashItemRow {
+    pub id: Uuid,
+    pub title: String,
+    pub description: String,
+    pub item_kind: String,
+    pub price_cents: i64,
+    pub currency: String,
+    pub total_stock: i32,
+    pub available_stock: i32,
+    pub per_user_limit: i32,
+    pub sale_starts_at: DateTime<Utc>,
+    pub sale_ends_at: DateTime<Utc>,
 }
 
 async fn fetch_rows(pool: &PgPool) -> Result<Vec<FlashItemRow>, sqlx::Error> {
@@ -51,11 +37,14 @@ async fn fetch_rows(pool: &PgPool) -> Result<Vec<FlashItemRow>, sqlx::Error> {
     .await
 }
 
-fn row_to_summary(row: FlashItemRow, now: DateTime<Utc>) -> Result<FlashItemSummary, String> {
+pub(super) fn row_to_summary(
+    row: FlashItemRow,
+    now: DateTime<Utc>,
+) -> Result<FlashItemSummary, String> {
     let item_kind = ItemKind::parse(&row.item_kind).map_err(|e| e.to_string())?;
     let price_cents = MoneyCents::try_new(row.price_cents).map_err(|e| e.to_string())?;
     let currency = Currency::parse(&row.currency).map_err(|e| e.to_string())?;
-    let window_status = compute_window_status(now, row.sale_starts_at, row.sale_ends_at);
+    let window_status = WindowStatus::at(now, row.sale_starts_at, row.sale_ends_at);
 
     Ok(FlashItemSummary {
         id: ItemId::new(row.id),

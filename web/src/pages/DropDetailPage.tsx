@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import type { FlashOrderView } from '../api/types';
 import { useFlashMartStore, type FlashMartStore } from '../stores/flashmartStore';
 import {
@@ -9,6 +9,7 @@ import {
   Cluster,
   Divider,
   InlineAlert,
+  LinkButton,
   NumberStepper,
   SkeletonCard,
   Stack,
@@ -57,17 +58,13 @@ export function DropDetailPage({ store }: { store: FlashMartStore }) {
   return (
     <Stack gap="5">
       <Cluster justify="between" align="center">
-        <Link to="/drops">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft size={14} aria-hidden="true" />
-            <span>返回抢购大厅</span>
-          </Button>
-        </Link>
-        <Link to="/orders">
-          <Button variant="secondary" size="sm">
-            查看我的订单
-          </Button>
-        </Link>
+        <LinkButton to="/drops" variant="ghost" size="sm">
+          <ArrowLeft size={14} aria-hidden="true" />
+          <span>返回抢购大厅</span>
+        </LinkButton>
+        <LinkButton to="/orders" variant="secondary" size="sm">
+          查看我的订单
+        </LinkButton>
       </Cluster>
 
       {state.feedback ? (

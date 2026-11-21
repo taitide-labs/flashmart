@@ -1,6 +1,5 @@
 import { RefreshCw } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import type { FlashOrderView, OrderStatus } from '../api/types';
 import { useFlashMartStore, type FlashMartStore } from '../stores/flashmartStore';
 import {
@@ -11,6 +10,7 @@ import {
   Divider,
   EmptyState,
   InlineAlert,
+  LinkButton,
   SkeletonCard,
   Stack,
   Surface,
@@ -142,9 +142,9 @@ export function OrdersPage({ store }: { store: FlashMartStore }) {
           title="当前买家暂无匹配订单"
           description="前往限时抢购大厅挑选限量好物，下单后可在此完成模拟结算或取消退回库存。"
           action={
-            <Link to="/drops">
-              <Button variant="primary">去逛逛抢购大厅</Button>
-            </Link>
+            <LinkButton to="/drops" variant="primary">
+              去逛逛抢购大厅
+            </LinkButton>
           }
         />
       ) : (

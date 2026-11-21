@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use flashmart_contracts::{FlashItemSnapshot, InventoryPortError};
+use flashmart_contracts::{FlashItemSnapshot, InventoryPortError, WindowStatus};
 use flashmart_infra::{ApiProblem, AppState, FieldValidationError, ProblemDetails};
 use flashmart_primitives::{Currency, ItemId, ItemKind, MoneyCents};
 use http::StatusCode;
@@ -7,7 +7,6 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use super::contract::FlashItemDetailView;
-use crate::qry_list_flash_items::handler::compute_window_status;
 
 #[derive(Debug, sqlx::FromRow)]
 pub(crate) struct FlashItemRow {
@@ -63,7 +62,7 @@ pub(crate) fn row_to_snapshot(
     let item_kind = ItemKind::parse(&row.item_kind).map_err(|e| e.to_string())?;
     let price_cents = MoneyCents::try_new(row.price_cents).map_err(|e| e.to_string())?;
     let currency = Currency::parse(&row.currency).map_err(|e| e.to_string())?;
-    let window_status = compute_window_status(now, row.sale_starts_at, row.sale_ends_at);
+    let window_status = WindowStatus::at(now, row.sale_starts_at, row.sale_ends_at);
 
     Ok(FlashItemSnapshot {
         id: ItemId::new(row.id),

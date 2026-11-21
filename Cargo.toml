@@ -17,6 +17,12 @@ edition = "2024"
 version = "0.1.0"
 license = "MIT"
 
+[workspace.lints.rust]
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+let_underscore_must_use = "deny"
+
 [workspace.dependencies]
 async-trait = "0.1"
 axum = "0.8"

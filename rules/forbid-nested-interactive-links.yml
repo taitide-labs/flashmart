@@ -1,0 +1,33 @@
+id: forbid-nested-interactive-links
+language: tsx
+severity: error
+message: "禁止在 <Link>/<NavLink>/<a> 与 <Button>/<button> 之间互相嵌套：嵌套交互控件会破坏无障碍角色语义与键盘焦点秩序；请改用 src/ui 导出的 <LinkButton>（按钮外观的路由导航链接）或纯文本 <Link>"
+files:
+  - "web/src/**/*.tsx"
+rule:
+  any:
+    - all:
+        - any:
+            - pattern: "<Link $$$>$$$</Link>"
+            - pattern: "<NavLink $$$>$$$</NavLink>"
+            - pattern: "<a $$$>$$$</a>"
+        - has:
+            stopBy: end
+            any:
+              - pattern: "<Button $$$>$$$</Button>"
+              - pattern: "<Button $$$ />"
+              - pattern: "<button $$$>$$$</button>"
+              - pattern: "<button $$$ />"
+    - all:
+        - any:
+            - pattern: "<Button $$$>$$$</Button>"
+            - pattern: "<button $$$>$$$</button>"
+        - has:
+            stopBy: end
+            any:
+              - pattern: "<Link $$$>$$$</Link>"
+              - pattern: "<Link $$$ />"
+              - pattern: "<NavLink $$$>$$$</NavLink>"
+              - pattern: "<NavLink $$$ />"
+              - pattern: "<a $$$>$$$</a>"
+              - pattern: "<a $$$ />"

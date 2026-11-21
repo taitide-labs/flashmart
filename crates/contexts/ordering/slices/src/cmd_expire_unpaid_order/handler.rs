@@ -201,13 +201,13 @@ async fn persist_expiration_tx(
         .map_err(|err| ExpireUnpaidOrdersError::Database(format!("锁定订单记录失败：{err}")))?;
 
     let Some(row) = locked_row else {
-        let _ = tx.rollback().await;
+        flashmart_infra::rollback_tx(tx, "cmd_expire_unpaid_order").await;
         return Ok(PersistOutcome::Skipped);
     };
 
     let order = rehydrate_order(row)?;
     if order.version() != expected_version {
-        let _ = tx.rollback().await;
+        flashmart_infra::rollback_tx(tx, "cmd_expire_unpaid_order").await;
         return Ok(PersistOutcome::Skipped);
     }
 
@@ -217,11 +217,11 @@ async fn persist_expiration_tx(
             OrderingDomainError::NotDueForExpiration
             | OrderingDomainError::InvalidOrderState { .. },
         ) => {
-            let _ = tx.rollback().await;
+            flashmart_infra::rollback_tx(tx, "cmd_expire_unpaid_order").await;
             return Ok(PersistOutcome::Skipped);
         }
         Err(err) => {
-            let _ = tx.rollback().await;
+            flashmart_infra::rollback_tx(tx, "cmd_expire_unpaid_order").await;
             return Err(ExpireUnpaidOrdersError::Database(err.to_string()));
         }
     };
@@ -248,7 +248,7 @@ async fn persist_expiration_tx(
     .map_err(|err| ExpireUnpaidOrdersError::Database(format!("更新订单过期状态失败：{err}")))?;
 
     if updated.rows_affected() != 1 {
-        let _ = tx.rollback().await;
+        flashmart_infra::rollback_tx(tx, "cmd_expire_unpaid_order").await;
         return Ok(PersistOutcome::Skipped);
     }
 
