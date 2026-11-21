@@ -9,6 +9,7 @@ use flashmart_infra::{
 use http::HeaderMap;
 
 use super::contract::{FlashOrderView, PlaceOrderCommand, PlaceOrderRequest};
+use super::handler;
 
 #[utoipa::path(
     post,
@@ -28,21 +29,15 @@ use super::contract::{FlashOrderView, PlaceOrderCommand, PlaceOrderRequest};
     )
 )]
 pub async fn handle(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     headers: HeaderMap,
     Json(req): Json<PlaceOrderRequest>,
 ) -> Result<(StatusCode, Json<FlashOrderView>), ApiProblem> {
     let buyer_id = extract_buyer_id(&headers, "/api/orders")?;
     let idempotency_key = extract_idempotency_key(&headers, "/api/orders")?;
-    let _cmd = PlaceOrderCommand::parse(buyer_id, idempotency_key, req, "/api/orders")?;
-    Err(ProblemDetails::new(
-        StatusCode::NOT_IMPLEMENTED,
-        "slice_not_implemented",
-        "接口尚未激活",
-        "cmd_place_order 切片尚处于 Planned 基线状态。",
-        "/api/orders",
-    )
-    .into())
+    let cmd = PlaceOrderCommand::parse(buyer_id, idempotency_key, req, "/api/orders")?;
+    let (status, view) = handler::handle(&state, cmd).await?;
+    Ok((status, Json(view)))
 }
 
 fn route() -> MethodRouter<AppState> {
@@ -55,7 +50,7 @@ inventory::submit! {
         context: "ordering",
         method: SliceMethod::Post,
         path: "/api/orders",
-        status: SliceStatus::Planned,
+        status: SliceStatus::Active,
         route,
     }
 }

@@ -9,6 +9,7 @@ axum.workspace = true
 chrono.workspace = true
 flashmart-contracts.workspace = true
 flashmart-infra.workspace = true
+flashmart-ordering-domain = { path = "../domain" }
 flashmart-primitives.workspace = true
 http.workspace = true
 inventory.workspace = true
