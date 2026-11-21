@@ -72,9 +72,11 @@ describe('FlashMart 客户端关键交互验收', () => {
     expect(await screen.findByText('模拟结算成功')).toBeInTheDocument();
 
     // 4. 前往我的订单并取消已支付订单
-    await user.click(
-      within(screen.getByRole('dialog')).getByRole('link', { name: '前往我的订单' }),
-    );
+    const ordersLink = within(screen.getByRole('dialog')).getByRole('link', {
+      name: '前往我的订单',
+    });
+    expect(ordersLink.querySelector('button')).toBeNull();
+    await user.click(ordersLink);
     expect(await screen.findByRole('heading', { name: '我的订单' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /已支付 1/ })).toBeInTheDocument();
 

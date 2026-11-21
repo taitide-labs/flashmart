@@ -33,7 +33,7 @@
 所有受控组件统一沉淀于 [ui](file:///Users/sony/RustroverProjects/taitide-labs/flashmart/web/src/ui) 目录，业务页面严禁硬编码样式或绕过 `ui/` 编写原生控件：
 
 - 布局原语：`Container`、`Stack`、`Cluster`、`Grid`、`Surface`（仅通过 `gap` / `padding` 语义属性控制间距）
-- 基础交互：`Button`（`variant`: `primary` | `secondary` | `ghost` | `danger`；`size`: `sm` | `md` | `lg`；支持 `loading` / `disabled` 与统一外置 `:focus-visible` 焦点环）
+- 基础交互：`Button`、`LinkButton`（`variant`: `primary` | `secondary` | `ghost` | `danger`；`size`: `sm` | `md` | `lg`；支持 `loading` / `disabled` 与统一外置 `:focus-visible` 焦点环；路由跳转且需按钮外观时必须使用 `LinkButton`，严禁在 `<Link>`/`<a>` 与 `<Button>`/`<button>` 之间互相嵌套）
 - 表单与输入：`Input`（内置 `label`、`hint`、`error` 与 `aria-invalid` 关联）、`NumberStepper`（受控加减步进器，遵循 min/max 边界禁用态）
 - 展示与反馈：`Badge`（`neutral` | `accent` | `success` | `warning` | `danger`）、`InlineAlert`（呈现 RFC 9457 错误与操作反馈）、`EmptyState`、`Skeleton`
 - 导航与浮层：`AppShell`（顶栏导航 + 买家标识入口 + 主题切换）、`Tabs`、`Dialog`（支持 `Esc` 关闭、遮罩关闭、ARIA `role="dialog"` 与焦点保持）

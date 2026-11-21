@@ -33,3 +33,28 @@ fn integration_event_carries_tagged_event_type() {
     let json = serde_json::to_value(&event).unwrap();
     assert_eq!(json["event_type"], "flash_order_placed");
 }
+
+#[test]
+fn window_status_at_classifies_boundaries() {
+    let starts_at = chrono::Utc
+        .with_ymd_and_hms(2026, 11, 21, 12, 0, 0)
+        .unwrap();
+    let ends_at = starts_at + chrono::Duration::minutes(60);
+
+    assert_eq!(
+        WindowStatus::at(starts_at - chrono::Duration::seconds(1), starts_at, ends_at),
+        WindowStatus::Upcoming
+    );
+    assert_eq!(
+        WindowStatus::at(starts_at, starts_at, ends_at),
+        WindowStatus::Active
+    );
+    assert_eq!(
+        WindowStatus::at(ends_at, starts_at, ends_at),
+        WindowStatus::Active
+    );
+    assert_eq!(
+        WindowStatus::at(ends_at + chrono::Duration::seconds(1), starts_at, ends_at),
+        WindowStatus::Ended
+    );
+}

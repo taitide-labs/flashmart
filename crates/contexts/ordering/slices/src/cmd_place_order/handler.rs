@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
-use flashmart_contracts::{FlashItemSnapshot, ReleaseReservedStockRequest, ReserveStockRequest};
-use flashmart_infra::{ApiProblem, AppState, ProblemDetails};
+use flashmart_contracts::{
+    FlashItemSnapshot, InventoryPortError, ReleaseReservedStockRequest, ReleaseStockOutcome,
+    ReserveStockRequest,
+};
+use flashmart_infra::{ApiProblem, AppState, ProblemDetails, rollback_tx};
 use flashmart_primitives::{OrderId, ReservationId};
 use http::StatusCode;
 use sqlx::PgPool;
@@ -64,7 +67,17 @@ pub async fn handle(
             Ok((StatusCode::CREATED, prepared.view))
         }
         Ok(PersistOutcome::IdempotencyRace) => {
-            compensate_release(state, reserved_id).await;
+            if !reserve_outcome.idempotent_replay
+                && let Err(release_err) = compensate_release(state, reserved_id).await
+            {
+                tracing::error!(
+                    reservation_id = %reserved_id,
+                    buyer_id = cmd.buyer_id.as_str(),
+                    item_id = %cmd.item_id,
+                    error = %release_err,
+                    "failed to release reserved stock after idempotency race"
+                );
+            }
             let existing = fetch_idempotency_record(&state.pool, &cmd)
                 .await?
                 .ok_or_else(|| {
@@ -77,17 +90,29 @@ pub async fn handle(
             resolve_idempotency_record(existing, &request_hash)
         }
         Err(err) => {
-            compensate_release(state, reserved_id).await;
+            if let Err(release_err) = compensate_release(state, reserved_id).await {
+                tracing::error!(
+                    reservation_id = %reserved_id,
+                    buyer_id = cmd.buyer_id.as_str(),
+                    item_id = %cmd.item_id,
+                    order_error_code = %err.code,
+                    error = %release_err,
+                    "failed to release reserved stock during order placement compensation"
+                );
+            }
             Err(err)
         }
     }
 }
 
-async fn compensate_release(state: &AppState, reservation_id: ReservationId) {
-    let _ = state
+pub(super) async fn compensate_release(
+    state: &AppState,
+    reservation_id: ReservationId,
+) -> Result<ReleaseStockOutcome, InventoryPortError> {
+    state
         .inventory_port
         .release_reserved_stock(ReleaseReservedStockRequest { reservation_id })
-        .await;
+        .await
 }
 
 async fn fetch_idempotency_record(
@@ -191,7 +216,7 @@ async fn persist_order_tx(
     })?;
 
     if existing_idem.is_some() {
-        let _ = tx.rollback().await;
+        rollback_tx(tx, "cmd_place_order").await;
         return Ok(PersistOutcome::IdempotencyRace);
     }
 
@@ -232,7 +257,7 @@ async fn persist_order_tx(
     }) {
         Ok(prepared) => prepared,
         Err(domain_err) => {
-            let _ = tx.rollback().await;
+            rollback_tx(tx, "cmd_place_order").await;
             return Err(workflow::map_domain_error(domain_err, PLACE_ORDER_INSTANCE));
         }
     };
@@ -272,7 +297,7 @@ async fn persist_order_tx(
     })?;
 
     if idem_insert.rows_affected() == 0 {
-        let _ = tx.rollback().await;
+        rollback_tx(tx, "cmd_place_order").await;
         return Ok(PersistOutcome::IdempotencyRace);
     }
 

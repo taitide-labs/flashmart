@@ -16,7 +16,6 @@ use super::workflow::{self, PreparedPayment};
 #[derive(Debug, sqlx::FromRow)]
 struct IdempotencyRecordRow {
     request_hash: String,
-    status_code: i16,
     response_body: serde_json::Value,
 }
 
@@ -122,7 +121,7 @@ async fn fetch_idempotency_record(
 ) -> Result<Option<IdempotencyRecordRow>, ApiProblem> {
     sqlx::query_as::<_, IdempotencyRecordRow>(
         r#"
-        SELECT request_hash, status_code, response_body
+        SELECT request_hash, response_body
         FROM ordering.idempotency_records
         WHERE buyer_id = $1
           AND endpoint = $2
@@ -152,7 +151,6 @@ fn resolve_idempotency_record(
     if record.request_hash != request_hash {
         return Err(workflow::idempotency_conflict_problem(instance));
     }
-    let _ = record.status_code;
     serde_json::from_value(record.response_body).map_err(|err| {
         internal_problem(
             "ordering_corrupted_idempotency",
@@ -264,7 +262,7 @@ async fn persist_payment_tx(
 
     let existing_idem = sqlx::query_as::<_, IdempotencyRecordRow>(
         r#"
-        SELECT request_hash, status_code, response_body
+        SELECT request_hash, response_body
         FROM ordering.idempotency_records
         WHERE buyer_id = $1
           AND endpoint = $2
@@ -286,12 +284,12 @@ async fn persist_payment_tx(
     })?;
 
     if existing_idem.is_some() {
-        let _ = tx.rollback().await;
+        flashmart_infra::rollback_tx(tx, "cmd_pay_order").await;
         return Ok(PersistOutcome::IdempotencyRace);
     }
 
     let Some(row) = locked_row else {
-        let _ = tx.rollback().await;
+        flashmart_infra::rollback_tx(tx, "cmd_pay_order").await;
         return Err(workflow::order_not_found_problem(cmd.order_id, instance));
     };
 
@@ -300,7 +298,7 @@ async fn persist_payment_tx(
     {
         Ok(prepared) => prepared,
         Err(domain_err) => {
-            let _ = tx.rollback().await;
+            flashmart_infra::rollback_tx(tx, "cmd_pay_order").await;
             return Err(workflow::map_domain_error(domain_err, instance));
         }
     };
@@ -342,7 +340,7 @@ async fn persist_payment_tx(
     })?;
 
     if idem_insert.rows_affected() == 0 {
-        let _ = tx.rollback().await;
+        flashmart_infra::rollback_tx(tx, "cmd_pay_order").await;
         return Ok(PersistOutcome::IdempotencyRace);
     }
 
@@ -375,7 +373,7 @@ async fn persist_payment_tx(
     })?;
 
     if updated.rows_affected() != 1 {
-        let _ = tx.rollback().await;
+        flashmart_infra::rollback_tx(tx, "cmd_pay_order").await;
         return Err(ProblemDetails::new(
             StatusCode::CONFLICT,
             "order_version_conflict",

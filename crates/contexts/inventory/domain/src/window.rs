@@ -29,12 +29,6 @@ impl SaleWindow {
     }
 
     pub fn status_at(self, now: DateTime<Utc>) -> WindowStatus {
-        if now < self.starts_at {
-            WindowStatus::Upcoming
-        } else if now > self.ends_at {
-            WindowStatus::Ended
-        } else {
-            WindowStatus::Active
-        }
+        WindowStatus::at(now, self.starts_at, self.ends_at)
     }
 }

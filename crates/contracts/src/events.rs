@@ -14,6 +14,20 @@ pub enum WindowStatus {
 }
 
 impl WindowStatus {
+    pub fn at(
+        now: DateTime<Utc>,
+        sale_starts_at: DateTime<Utc>,
+        sale_ends_at: DateTime<Utc>,
+    ) -> Self {
+        if now < sale_starts_at {
+            Self::Upcoming
+        } else if now > sale_ends_at {
+            Self::Ended
+        } else {
+            Self::Active
+        }
+    }
+
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Upcoming => "upcoming",

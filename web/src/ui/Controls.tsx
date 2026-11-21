@@ -1,9 +1,25 @@
 import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
+import { Link, type LinkProps } from 'react-router-dom';
 import type { Tone } from './tokens';
 
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+function buttonClassName({
+  variant = 'secondary',
+  size = 'md',
+  fullWidth = false,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+}) {
+  return `fm-btn fm-btn--${variant} fm-btn--${size}${fullWidth ? ' fm-btn--full' : ''}`;
+}
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
   fullWidth?: boolean;
   children: ReactNode;
@@ -24,12 +40,37 @@ export function Button({
       type={type}
       disabled={Boolean(disabled || loading)}
       aria-busy={loading || undefined}
-      className={`fm-btn fm-btn--${variant} fm-btn--${size} ${fullWidth ? 'fm-btn--full' : ''}`}
+      className={buttonClassName({ variant, size, fullWidth })}
       {...rest}
     >
       {loading ? <span className="fm-spinner" aria-hidden="true" /> : null}
       {children}
     </button>
+  );
+}
+
+export interface LinkButtonProps extends LinkProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  children: ReactNode;
+}
+
+export function LinkButton({
+  variant = 'secondary',
+  size = 'md',
+  fullWidth = false,
+  className,
+  children,
+  ...rest
+}: LinkButtonProps) {
+  return (
+    <Link
+      className={`${buttonClassName({ variant, size, fullWidth })}${className ? ` ${className}` : ''}`}
+      {...rest}
+    >
+      {children}
+    </Link>
   );
 }
 

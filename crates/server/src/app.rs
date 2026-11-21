@@ -202,7 +202,7 @@ pub fn spawn_expiration_sweeper(
         ticker.tick().await;
         loop {
             ticker.tick().await;
-            let _ = run_expiration_sweep_once(&state).await;
+            run_expiration_sweep_once(&state).await;
         }
     })
 }

@@ -1,0 +1,21 @@
+id: forbid-cross-slice-imports
+language: rust
+severity: error
+message: "禁止在垂直切片 (cmd_*/qry_*) 中跨切片引用其他 cmd_*/qry_* 内部模块：这会破坏切片自治与可独立演化性；请保持切片各自投影，并将共享契约类型或纯状态判断下沉至 crates/contracts（或领域模型仅限 cmd_* 使用）"
+files:
+  - "crates/contexts/**/slices/src/cmd_*/**/*.rs"
+  - "crates/contexts/**/slices/src/cmd_*.rs"
+  - "crates/contexts/**/slices/src/qry_*/**/*.rs"
+  - "crates/contexts/**/slices/src/qry_*.rs"
+rule:
+  kind: identifier
+  regex: "^(cmd|qry)_[a-z0-9_]+$"
+  inside:
+    stopBy: end
+    any:
+      - kind: use_declaration
+      - kind: scoped_identifier
+      - kind: scoped_type_identifier
+  not:
+    inside:
+      kind: attribute_item

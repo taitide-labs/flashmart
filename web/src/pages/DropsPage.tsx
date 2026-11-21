@@ -12,6 +12,7 @@ import {
   EmptyState,
   Grid,
   InlineAlert,
+  LinkButton,
   NumberStepper,
   SkeletonCard,
   Stack,
@@ -255,11 +256,9 @@ export function DropsPage({ store }: { store: FlashMartStore }) {
                   <Divider />
 
                   <Cluster justify="between" align="center" gap="2">
-                    <Link to={`/drops/${item.id}`}>
-                      <Button variant="ghost" size="sm">
-                        商品详情
-                      </Button>
-                    </Link>
+                    <LinkButton to={`/drops/${item.id}`} variant="ghost" size="sm">
+                      商品详情
+                    </LinkButton>
                     <Button
                       variant={canOrder ? 'primary' : 'secondary'}
                       size="md"
@@ -298,9 +297,9 @@ export function DropsPage({ store }: { store: FlashMartStore }) {
               <Button variant="ghost" onClick={closeCheckout}>
                 留在本页
               </Button>
-              <Link to="/orders" onClick={closeCheckout}>
-                <Button variant="secondary">前往我的订单</Button>
-              </Link>
+              <LinkButton to="/orders" variant="secondary" onClick={closeCheckout}>
+                前往我的订单
+              </LinkButton>
               {createdOrder.status === 'pending_payment' ? (
                 <Button
                   variant="primary"

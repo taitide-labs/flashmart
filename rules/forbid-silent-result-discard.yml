@@ -1,0 +1,12 @@
+id: forbid-silent-result-discard
+language: rust
+severity: error
+message: "禁止绕过 must_use 静态防线静默吞掉 Result 返回值（禁止 #[allow(clippy::let_underscore_must_use)]、#[allow(unused_must_use)] 或独立 .ok(); 语句）：端口补偿或数据库失败会被掩盖；请显式 match / if let Err(err) 处理并记录结构化日志或向上传播"
+files:
+  - "crates/**/*.rs"
+rule:
+  any:
+    - pattern: "#[allow(clippy::let_underscore_must_use)]"
+    - pattern: "#[allow(unused_must_use)]"
+    - pattern: "$EXPR.ok();"
+    - pattern: "let _ = $EXPR.ok();"
