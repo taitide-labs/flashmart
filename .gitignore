@@ -1,0 +1,10 @@
+# Dependencies & build artifacts
+node_modules/
+web/dist/
+target/
+*.tsbuildinfo
+
+# Environment & OS files
+.env
+.env.local
+.DS_Store
