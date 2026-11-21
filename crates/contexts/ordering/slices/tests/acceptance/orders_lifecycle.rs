@@ -504,7 +504,6 @@ async fn pay_and_cancel_enforce_occ_ownership_and_release_quota(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn expire_unpaid_orders_releases_stock_after_hold_duration(pool: PgPool) {
     let now = base_time();
     let clock = Arc::new(FixedClock::new(now));
