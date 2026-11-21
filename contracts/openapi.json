@@ -1,0 +1,1326 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FlashMart API",
+    "description": "FlashMart 限时抢购与模拟结算后端冻结契约",
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/flash-items": {
+      "get": {
+        "tags": [
+          "inventory"
+        ],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "返回限量商品目录与实时剩余库存",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlashItemListResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务端异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/flash-items/{item_id}": {
+      "get": {
+        "tags": [
+          "inventory"
+        ],
+        "operationId": "handle",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "description": "限量商品 UUID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回单个限量商品详情与实时库存",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlashItemDetailView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "商品编号格式无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "服务健康检查",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders": {
+      "get": {
+        "tags": [
+          "ordering"
+        ],
+        "operationId": "handle",
+        "parameters": [
+          {
+            "name": "X-Buyer-Id",
+            "in": "header",
+            "description": "轻量买家标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回当前买家订单列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlashOrderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少 X-Buyer-Id 请求头",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "买家标识格式无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ordering"
+        ],
+        "operationId": "handle",
+        "parameters": [
+          {
+            "name": "X-Buyer-Id",
+            "in": "header",
+            "description": "轻量买家标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "请求幂等键",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "预占库存成功并创建待支付订单",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlashOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少必要请求头",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "库存不足、不在时间窗、超限购或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "下单参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "ordering"
+        ],
+        "operationId": "handle",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "description": "抢购订单 UUID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Buyer-Id",
+            "in": "header",
+            "description": "轻量买家标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回订单详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlashOrderDetailView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少 X-Buyer-Id 请求头",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权查看他人订单",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{order_id}/cancel": {
+      "post": {
+        "tags": [
+          "ordering"
+        ],
+        "operationId": "handle",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "description": "抢购订单 UUID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Buyer-Id",
+            "in": "header",
+            "description": "轻量买家标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "请求幂等键",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "取消订单并按状态触发释放/退回库存",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelledOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少必要请求头",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权操作他人订单",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、不可取消状态或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{order_id}/pay": {
+      "post": {
+        "tags": [
+          "ordering"
+        ],
+        "operationId": "handle",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "description": "抢购订单 UUID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Buyer-Id",
+            "in": "header",
+            "description": "轻量买家标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "请求幂等键",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "模拟结算成功并确认库存扣减",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaidOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少必要请求头",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权操作他人订单",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、已过期、状态不允许或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BuyerId": {
+        "type": "string",
+        "description": "轻量买家标识：1-64 位字母、数字、下划线或连字符"
+      },
+      "CancelOrderRequest": {
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CancelledOrderView": {
+        "type": "object",
+        "required": [
+          "id",
+          "buyer_id",
+          "item_id",
+          "item_title",
+          "item_kind",
+          "quantity",
+          "unit_price_cents",
+          "total_amount_cents",
+          "currency",
+          "status",
+          "version",
+          "payment_deadline",
+          "created_at"
+        ],
+        "properties": {
+          "buyer_id": {
+            "$ref": "#/components/schemas/BuyerId"
+          },
+          "cancelled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "expired_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "fulfillment_hint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/OrderId"
+          },
+          "item_id": {
+            "$ref": "#/components/schemas/ItemId"
+          },
+          "item_kind": {
+            "$ref": "#/components/schemas/ItemKind"
+          },
+          "item_title": {
+            "type": "string"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "payment_deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderLifecycleStatus"
+          },
+          "total_amount_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "unit_price_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "version": {
+            "$ref": "#/components/schemas/OrderVersion"
+          }
+        }
+      },
+      "Currency": {
+        "type": "string",
+        "description": "币种（首期固定 CNY）",
+        "enum": [
+          "Cny"
+        ]
+      },
+      "FieldValidationError": {
+        "type": "object",
+        "required": [
+          "field",
+          "message"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "FlashItemDetailView": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "item_kind",
+          "price_cents",
+          "currency",
+          "total_stock",
+          "available_stock",
+          "per_user_limit",
+          "sale_starts_at",
+          "sale_ends_at",
+          "window_status",
+          "server_time"
+        ],
+        "properties": {
+          "available_stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/ItemId"
+          },
+          "item_kind": {
+            "$ref": "#/components/schemas/ItemKind"
+          },
+          "per_user_limit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "price_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "sale_ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sale_starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "title": {
+            "type": "string"
+          },
+          "total_stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "window_status": {
+            "$ref": "#/components/schemas/WindowStatus"
+          }
+        }
+      },
+      "FlashItemListResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "server_time"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlashItemSummary"
+            }
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FlashItemSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "item_kind",
+          "price_cents",
+          "currency",
+          "total_stock",
+          "available_stock",
+          "per_user_limit",
+          "sale_starts_at",
+          "sale_ends_at",
+          "window_status",
+          "server_time"
+        ],
+        "properties": {
+          "available_stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/ItemId"
+          },
+          "item_kind": {
+            "$ref": "#/components/schemas/ItemKind"
+          },
+          "per_user_limit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "price_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "sale_ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sale_starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "title": {
+            "type": "string"
+          },
+          "total_stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "window_status": {
+            "$ref": "#/components/schemas/WindowStatus"
+          }
+        }
+      },
+      "FlashOrderDetailView": {
+        "type": "object",
+        "required": [
+          "id",
+          "buyer_id",
+          "item_id",
+          "item_title",
+          "item_kind",
+          "quantity",
+          "unit_price_cents",
+          "total_amount_cents",
+          "currency",
+          "status",
+          "version",
+          "payment_deadline",
+          "created_at"
+        ],
+        "properties": {
+          "buyer_id": {
+            "$ref": "#/components/schemas/BuyerId"
+          },
+          "cancelled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "expired_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "fulfillment_hint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/OrderId"
+          },
+          "item_id": {
+            "$ref": "#/components/schemas/ItemId"
+          },
+          "item_kind": {
+            "$ref": "#/components/schemas/ItemKind"
+          },
+          "item_title": {
+            "type": "string"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "payment_deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderLifecycleStatus"
+          },
+          "total_amount_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "unit_price_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "version": {
+            "$ref": "#/components/schemas/OrderVersion"
+          }
+        }
+      },
+      "FlashOrderListResponse": {
+        "type": "object",
+        "required": [
+          "orders",
+          "server_time"
+        ],
+        "properties": {
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlashOrderSummaryView"
+            }
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FlashOrderSummaryView": {
+        "type": "object",
+        "required": [
+          "id",
+          "buyer_id",
+          "item_id",
+          "item_title",
+          "item_kind",
+          "quantity",
+          "unit_price_cents",
+          "total_amount_cents",
+          "currency",
+          "status",
+          "version",
+          "payment_deadline",
+          "created_at"
+        ],
+        "properties": {
+          "buyer_id": {
+            "$ref": "#/components/schemas/BuyerId"
+          },
+          "cancelled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "expired_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "fulfillment_hint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/OrderId"
+          },
+          "item_id": {
+            "$ref": "#/components/schemas/ItemId"
+          },
+          "item_kind": {
+            "$ref": "#/components/schemas/ItemKind"
+          },
+          "item_title": {
+            "type": "string"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "payment_deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderLifecycleStatus"
+          },
+          "total_amount_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "unit_price_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "version": {
+            "$ref": "#/components/schemas/OrderVersion"
+          }
+        }
+      },
+      "FlashOrderView": {
+        "type": "object",
+        "required": [
+          "id",
+          "buyer_id",
+          "item_id",
+          "item_title",
+          "item_kind",
+          "quantity",
+          "unit_price_cents",
+          "total_amount_cents",
+          "currency",
+          "status",
+          "version",
+          "payment_deadline",
+          "created_at"
+        ],
+        "properties": {
+          "buyer_id": {
+            "$ref": "#/components/schemas/BuyerId"
+          },
+          "cancelled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "expired_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "fulfillment_hint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/OrderId"
+          },
+          "item_id": {
+            "$ref": "#/components/schemas/ItemId"
+          },
+          "item_kind": {
+            "$ref": "#/components/schemas/ItemKind"
+          },
+          "item_title": {
+            "type": "string"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "payment_deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderLifecycleStatus"
+          },
+          "total_amount_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "unit_price_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "version": {
+            "$ref": "#/components/schemas/OrderVersion"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ItemId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "限量商品强类型标识"
+      },
+      "ItemKind": {
+        "type": "string",
+        "description": "限量商品品类标记",
+        "enum": [
+          "digital",
+          "physical"
+        ]
+      },
+      "MoneyCents": {
+        "type": "integer",
+        "format": "int64",
+        "description": "非负金额（单位：分）"
+      },
+      "OrderId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "抢购订单强类型标识"
+      },
+      "OrderLifecycleStatus": {
+        "type": "string",
+        "description": "跨上下文开放枚举：订单生命周期状态",
+        "enum": [
+          "pending_payment",
+          "paid",
+          "cancelled",
+          "expired"
+        ]
+      },
+      "OrderVersion": {
+        "type": "integer",
+        "format": "int32",
+        "description": "订单乐观锁版本号（>= 1）"
+      },
+      "PaidOrderView": {
+        "type": "object",
+        "required": [
+          "id",
+          "buyer_id",
+          "item_id",
+          "item_title",
+          "item_kind",
+          "quantity",
+          "unit_price_cents",
+          "total_amount_cents",
+          "currency",
+          "status",
+          "version",
+          "payment_deadline",
+          "created_at"
+        ],
+        "properties": {
+          "buyer_id": {
+            "$ref": "#/components/schemas/BuyerId"
+          },
+          "cancelled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "expired_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "fulfillment_hint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/OrderId"
+          },
+          "item_id": {
+            "$ref": "#/components/schemas/ItemId"
+          },
+          "item_kind": {
+            "$ref": "#/components/schemas/ItemKind"
+          },
+          "item_title": {
+            "type": "string"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "payment_deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderLifecycleStatus"
+          },
+          "total_amount_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "unit_price_cents": {
+            "$ref": "#/components/schemas/MoneyCents"
+          },
+          "version": {
+            "$ref": "#/components/schemas/OrderVersion"
+          }
+        }
+      },
+      "PayOrderRequest": {
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PlaceOrderRequest": {
+        "type": "object",
+        "required": [
+          "item_id",
+          "quantity"
+        ],
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "description": "RFC 9457 问题详情响应，字段严格对齐客户端 `ProblemDetails` 契约",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "errors": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/FieldValidationError"
+            }
+          },
+          "instance": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "Quantity": {
+        "type": "integer",
+        "format": "int32",
+        "description": "购买或库存操作正整数件数（>= 1）"
+      },
+      "WindowStatus": {
+        "type": "string",
+        "description": "跨上下文开放枚举：限量商品抢购时间窗状态",
+        "enum": [
+          "upcoming",
+          "active",
+          "ended"
+        ]
+      }
+    }
+  }
+}

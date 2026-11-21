@@ -1,0 +1,15 @@
+id: forbid-inline-test-module
+language: rust
+severity: error
+message: "禁止在业务源文件中内联 #[cfg(test)] mod tests；请拆分为 src/tests.rs 与 src/tests/<unit>.rs"
+files:
+  - "crates/**/src/**/*.rs"
+ignores:
+  - "crates/**/src/tests.rs"
+  - "crates/**/src/tests/**"
+  - "crates/**/src/**/tests.rs"
+  - "crates/**/src/**/tests/**"
+rule:
+  any:
+    - pattern: "mod tests { $$$ }"
+    - pattern: "#[test]"

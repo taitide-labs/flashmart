@@ -1,0 +1,12 @@
+id: forbid-ordering-import-inventory
+language: rust
+severity: error
+message: "订单结算上下文禁止直接引用商品库存上下文的领域或切片，只能通过 flashmart_contracts::InventoryPort 协作"
+files:
+  - "crates/contexts/ordering/**/*.rs"
+rule:
+  any:
+    - pattern: "use flashmart_inventory_domain::$REST"
+    - pattern: "use flashmart_inventory_slices::$REST"
+    - pattern: "flashmart_inventory_domain::$REST"
+    - pattern: "flashmart_inventory_slices::$REST"

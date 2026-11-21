@@ -1,0 +1,11 @@
+id: forbid-query-slice-import-domain
+language: rust
+severity: error
+message: "CQRS 读切片 (qry_*) 严禁导入写侧 domain 模型，请直接执行只读投影"
+files:
+  - "crates/contexts/**/slices/src/qry_*/**/*.rs"
+  - "crates/contexts/**/slices/src/qry_*.rs"
+rule:
+  any:
+    - pattern: "use flashmart_inventory_domain::$REST"
+    - pattern: "use flashmart_ordering_domain::$REST"

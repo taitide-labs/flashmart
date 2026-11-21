@@ -1,0 +1,27 @@
+[package]
+name = "flashmart-ordering-slices"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+axum.workspace = true
+chrono.workspace = true
+flashmart-contracts.workspace = true
+flashmart-infra.workspace = true
+flashmart-primitives.workspace = true
+http.workspace = true
+inventory.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+utoipa.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+async-trait.workspace = true
+http-body-util.workspace = true
+rstest.workspace = true
+tokio.workspace = true
+tower.workspace = true

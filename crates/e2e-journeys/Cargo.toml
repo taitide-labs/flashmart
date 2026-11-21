@@ -1,0 +1,24 @@
+[package]
+name = "flashmart-e2e-journeys"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+axum.workspace = true
+chrono.workspace = true
+flashmart-contracts.workspace = true
+flashmart-infra.workspace = true
+flashmart-inventory-slices.workspace = true
+flashmart-ordering-slices.workspace = true
+flashmart-primitives.workspace = true
+flashmart-server.workspace = true
+http.workspace = true
+http-body-util.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tower.workspace = true
+uuid.workspace = true

@@ -1,0 +1,22 @@
+[package]
+name = "flashmart-infra"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+axum.workspace = true
+chrono.workspace = true
+flashmart-contracts.workspace = true
+flashmart-primitives.workspace = true
+http.workspace = true
+inventory.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+utoipa.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

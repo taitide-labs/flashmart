@@ -1,0 +1,12 @@
+id: forbid-inventory-import-ordering
+language: rust
+severity: error
+message: "商品库存上下文禁止反向引用订单结算上下文"
+files:
+  - "crates/contexts/inventory/**/*.rs"
+rule:
+  any:
+    - pattern: "use flashmart_ordering_domain::$REST"
+    - pattern: "use flashmart_ordering_slices::$REST"
+    - pattern: "flashmart_ordering_domain::$REST"
+    - pattern: "flashmart_ordering_slices::$REST"

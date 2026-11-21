@@ -1,0 +1,15 @@
+[package]
+name = "flashmart-inventory-domain"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+chrono.workspace = true
+flashmart-contracts.workspace = true
+flashmart-primitives.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+rstest.workspace = true
+uuid.workspace = true

@@ -1,0 +1,17 @@
+[package]
+name = "flashmart-contracts"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+chrono.workspace = true
+flashmart-primitives.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+utoipa.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

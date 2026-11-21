@@ -1,0 +1,45 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/primitives",
+  "crates/contracts",
+  "crates/infra",
+  "crates/contexts/inventory/domain",
+  "crates/contexts/inventory/slices",
+  "crates/contexts/ordering/domain",
+  "crates/contexts/ordering/slices",
+  "crates/server",
+  "crates/e2e-journeys",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+license = "MIT"
+
+[workspace.dependencies]
+async-trait = "0.1"
+axum = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+http = "1"
+http-body-util = "0.1"
+inventory = "0.3"
+rstest = "0.25"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.8", features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono", "json", "migrate"] }
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+utoipa = { version = "5", features = ["chrono", "uuid"] }
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+
+flashmart-primitives = { path = "crates/primitives" }
+flashmart-contracts = { path = "crates/contracts" }
+flashmart-infra = { path = "crates/infra" }
+flashmart-inventory-slices = { path = "crates/contexts/inventory/slices" }
+flashmart-ordering-slices = { path = "crates/contexts/ordering/slices" }
+flashmart-server = { path = "crates/server" }
