@@ -416,6 +416,7 @@ dependencies = [
  "chrono",
  "flashmart-contracts",
  "flashmart-infra",
+ "flashmart-inventory-domain",
  "flashmart-primitives",
  "http",
  "http-body-util",

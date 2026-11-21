@@ -51,9 +51,16 @@ impl InventoryPort for PgInventoryPort {
 
     async fn reserve_stock(
         &self,
-        _req: ReserveStockRequest,
+        req: ReserveStockRequest,
     ) -> Result<ReserveStockOutcome, InventoryPortError> {
-        Err(InventoryPortError::NotImplemented("cmd_reserve_stock"))
+        crate::cmd_reserve_stock::handler::reserve_stock(
+            &self.pool,
+            self.clock.as_ref(),
+            self.id_gen.as_ref(),
+            self.event_bus.as_ref(),
+            req.into(),
+        )
+        .await
     }
 
     async fn confirm_stock_deduction(
