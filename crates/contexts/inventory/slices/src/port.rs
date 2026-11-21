@@ -38,7 +38,7 @@ impl PgInventoryPort {
 #[async_trait]
 impl InventoryPort for PgInventoryPort {
     async fn list_flash_items(&self) -> Result<Vec<FlashItemSnapshot>, InventoryPortError> {
-        Err(InventoryPortError::NotImplemented("qry_list_flash_items"))
+        crate::qry_list_flash_items::handler::list_snapshots(&self.pool, self.clock.now()).await
     }
 
     async fn get_flash_item(

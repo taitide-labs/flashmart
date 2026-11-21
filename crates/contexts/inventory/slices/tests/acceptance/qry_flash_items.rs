@@ -13,7 +13,6 @@ use uuid::Uuid;
 use super::support::{TestItemSeed, base_time, insert_flash_item, test_router, test_state};
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn list_flash_items_returns_window_status_and_server_time(pool: PgPool) {
     let now = base_time();
     let clock = Arc::new(FixedClock::new(now));
