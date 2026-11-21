@@ -392,7 +392,6 @@ async fn pay_order_enforces_ownership_occ_expiration_and_idempotency(pool: PgPoo
 }
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn pay_and_cancel_enforce_occ_ownership_and_release_quota(pool: PgPool) {
     let now = base_time();
     let clock = Arc::new(FixedClock::new(now));
