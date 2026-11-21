@@ -55,7 +55,14 @@ export function createFetchTransport(baseUrl = ''): Transport {
       }
 
       const text = await response.text();
-      const parsed = text ? (JSON.parse(text) as unknown) : null;
+      let parsed: unknown = null;
+      if (text) {
+        try {
+          parsed = JSON.parse(text) as unknown;
+        } catch {
+          parsed = null;
+        }
+      }
 
       if (!response.ok) {
         const problem = normalizeProblemDetails(parsed, response.status, req.path);

@@ -11,11 +11,12 @@ use flashmart_inventory_slices::port::PgInventoryPort;
 use http::{Request, StatusCode};
 use http_body_util::BodyExt;
 use serde_json::Value;
+use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 use utoipa::OpenApi;
 
-use crate::{ApiDoc, build_app};
+use crate::{ApiDoc, build_app, run_expiration_sweep_once, seed_demo_items};
 
 fn dummy_state() -> AppState {
     let pool = PgPoolOptions::new()
@@ -118,4 +119,69 @@ fn openapi_spec_contains_all_frozen_paths() {
     ] {
         assert!(paths.contains_key(path), "missing openapi path {path}");
     }
+}
+
+#[test]
+fn exported_openapi_json_matches_server_apidoc() {
+    let generated = serde_json::to_value(ApiDoc::openapi()).unwrap();
+    let committed: Value =
+        serde_json::from_str(include_str!("../../../../contracts/openapi.json")).unwrap();
+    assert_eq!(generated, committed);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn seed_demo_items_is_idempotent_and_preserves_live_stock(pool: PgPool) {
+    let now = Utc.with_ymd_and_hms(2026, 11, 21, 12, 0, 0).unwrap();
+    let first = seed_demo_items(&pool, now).await.unwrap();
+    assert_eq!(first, 5);
+
+    // 模拟线上已发生 1 件预占后再次重启初始化，不得覆盖实时库存
+    sqlx::query(
+        r#"
+        UPDATE inventory.flash_items
+        SET available_stock = available_stock - 1,
+            reserved_stock = reserved_stock + 1
+        WHERE id = '11111111-1111-4111-8111-111111111101'::uuid
+        "#,
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let second = seed_demo_items(&pool, now + Duration::minutes(5))
+        .await
+        .unwrap();
+    assert_eq!(second, 0);
+
+    let available: i32 = sqlx::query_scalar(
+        "SELECT available_stock FROM inventory.flash_items WHERE id = '11111111-1111-4111-8111-111111111101'::uuid",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(available, 9);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn expiration_sweeper_returns_zero_when_nothing_due(pool: PgPool) {
+    let clock = Arc::new(FixedClock::new(
+        Utc.with_ymd_and_hms(2026, 11, 21, 12, 0, 0).unwrap(),
+    ));
+    let id_gen = Arc::new(SequenceIdGenerator::new(1));
+    let event_bus = Arc::new(InMemoryEventBus::new());
+    let port = Arc::new(PgInventoryPort::new(
+        pool.clone(),
+        clock.clone(),
+        id_gen.clone(),
+        event_bus.clone(),
+    ));
+    let state = AppState::new(
+        pool,
+        clock,
+        id_gen,
+        port as Arc<dyn InventoryPort>,
+        event_bus,
+        Duration::minutes(15),
+    );
+    assert_eq!(run_expiration_sweep_once(&state).await, 0);
 }
