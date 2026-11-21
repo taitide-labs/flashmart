@@ -1,5 +1,4 @@
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
 use axum::routing::{MethodRouter, get};
 use flashmart_infra::{
     ApiProblem, AppState, ProblemDetails, SliceDescriptor, SliceMethod, SliceStatus,
@@ -8,6 +7,7 @@ use flashmart_infra::{
 use http::HeaderMap;
 
 use super::contract::FlashOrderDetailView;
+use super::handler;
 
 #[utoipa::path(
     get,
@@ -25,20 +25,14 @@ use super::contract::FlashOrderDetailView;
     )
 )]
 pub async fn handle(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     headers: HeaderMap,
     Path(order_id): Path<String>,
 ) -> Result<axum::Json<FlashOrderDetailView>, ApiProblem> {
     let instance = format!("/api/orders/{order_id}");
-    let _buyer_id = extract_buyer_id(&headers, &instance)?;
-    Err(ProblemDetails::new(
-        StatusCode::NOT_IMPLEMENTED,
-        "slice_not_implemented",
-        "接口尚未激活",
-        "qry_get_order 切片尚处于 Planned 基线状态。",
-        instance,
-    )
-    .into())
+    let buyer_id = extract_buyer_id(&headers, &instance)?;
+    let view = handler::query_detail(&state, &buyer_id, &order_id, &instance).await?;
+    Ok(axum::Json(view))
 }
 
 fn route() -> MethodRouter<AppState> {
@@ -51,7 +45,7 @@ inventory::submit! {
         context: "ordering",
         method: SliceMethod::Get,
         path: "/api/orders/{order_id}",
-        status: SliceStatus::Planned,
+        status: SliceStatus::Active,
         route,
     }
 }
