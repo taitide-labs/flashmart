@@ -70,7 +70,6 @@ async fn concurrent_reservations_never_oversell(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn release_and_return_follow_sale_window_restock_rule(pool: PgPool) {
     let now = base_time();
     let clock = Arc::new(FixedClock::new(now));

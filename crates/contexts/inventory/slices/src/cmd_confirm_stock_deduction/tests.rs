@@ -1,0 +1,1 @@
+mod cmd_confirm_stock_deduction_test;
