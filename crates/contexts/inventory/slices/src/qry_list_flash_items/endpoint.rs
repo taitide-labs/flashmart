@@ -1,11 +1,11 @@
 use axum::extract::State;
-use axum::http::StatusCode;
 use axum::routing::{MethodRouter, get};
 use flashmart_infra::{
     ApiProblem, AppState, ProblemDetails, SliceDescriptor, SliceMethod, SliceStatus,
 };
 
 use super::contract::FlashItemListResponse;
+use super::handler;
 
 #[utoipa::path(
     get,
@@ -17,16 +17,10 @@ use super::contract::FlashItemListResponse;
     )
 )]
 pub async fn handle(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
 ) -> Result<axum::Json<FlashItemListResponse>, ApiProblem> {
-    Err(ProblemDetails::new(
-        StatusCode::NOT_IMPLEMENTED,
-        "slice_not_implemented",
-        "接口尚未激活",
-        "qry_list_flash_items 切片尚处于 Planned 基线状态。",
-        "/api/flash-items",
-    )
-    .into())
+    let response = handler::query_list(&state).await?;
+    Ok(axum::Json(response))
 }
 
 fn route() -> MethodRouter<AppState> {
@@ -39,7 +33,7 @@ inventory::submit! {
         context: "inventory",
         method: SliceMethod::Get,
         path: "/api/flash-items",
-        status: SliceStatus::Planned,
+        status: SliceStatus::Active,
         route,
     }
 }
