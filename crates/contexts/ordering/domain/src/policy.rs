@@ -34,7 +34,10 @@ pub struct ActiveQuota {
 }
 
 impl ActiveQuota {
-    pub fn try_new(per_user_limit: i32, current_active_qty: i32) -> Result<Self, OrderingDomainError> {
+    pub fn try_new(
+        per_user_limit: i32,
+        current_active_qty: i32,
+    ) -> Result<Self, OrderingDomainError> {
         if per_user_limit < 1 {
             return Err(OrderingDomainError::InvalidPerUserLimit);
         }

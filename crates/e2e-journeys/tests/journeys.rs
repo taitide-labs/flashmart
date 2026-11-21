@@ -115,7 +115,12 @@ async fn walking_skeleton_flash_sale_journey_place_pay_cancel_and_restock(pool: 
     let paid: Value =
         serde_json::from_slice(&pay_res.into_body().collect().await.unwrap().to_bytes()).unwrap();
     assert_eq!(paid["status"], "paid");
-    assert!(paid["fulfillment_hint"].as_str().unwrap().contains("FM-DIGI-"));
+    assert!(
+        paid["fulfillment_hint"]
+            .as_str()
+            .unwrap()
+            .contains("FM-DIGI-")
+    );
 
     // 4. 买家 A 取消已支付订单 -> 模拟退款并回流库存至 2
     let cancel_res = app

@@ -17,8 +17,8 @@ pub struct ServerConfig {
 
 impl ServerConfig {
     pub fn from_env() -> Self {
-        let listen_addr = std::env::var("FLASHMART_LISTEN_ADDR")
-            .unwrap_or_else(|_| "0.0.0.0:8080".to_owned());
+        let listen_addr =
+            std::env::var("FLASHMART_LISTEN_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".to_owned());
         let database_url = std::env::var("DATABASE_URL")
             .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/postgres".to_owned());
         let payment_hold_secs = std::env::var("FLASHMART_PAYMENT_HOLD_SECS")

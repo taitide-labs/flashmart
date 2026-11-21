@@ -205,7 +205,8 @@ impl InventoryPort for FakeInventoryPort {
         let item_id = res.item_id;
         let qty = res.quantity;
         let item = guard.items.get_mut(&item_id).unwrap();
-        let active = compute_window(now, item.sale_starts_at, item.sale_ends_at) == WindowStatus::Active;
+        let active =
+            compute_window(now, item.sale_starts_at, item.sale_ends_at) == WindowStatus::Active;
         if active {
             item.available_stock += qty;
         }
@@ -238,7 +239,8 @@ impl InventoryPort for FakeInventoryPort {
         let item_id = res.item_id;
         let qty = res.quantity;
         let item = guard.items.get_mut(&item_id).unwrap();
-        let active = compute_window(now, item.sale_starts_at, item.sale_ends_at) == WindowStatus::Active;
+        let active =
+            compute_window(now, item.sale_starts_at, item.sale_ends_at) == WindowStatus::Active;
         if active {
             item.available_stock += qty;
         }

@@ -51,7 +51,8 @@ async fn place_order_enforces_idempotency_limit_and_compensation(pool: PgPool) {
         .await
         .unwrap();
     assert!(res1.status().is_success());
-    let created: Value = serde_json::from_slice(&res1.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    let created: Value =
+        serde_json::from_slice(&res1.into_body().collect().await.unwrap().to_bytes()).unwrap();
     assert_eq!(created["status"], "pending_payment");
     assert_eq!(created["version"], 1);
 
@@ -71,7 +72,8 @@ async fn place_order_enforces_idempotency_limit_and_compensation(pool: PgPool) {
         .await
         .unwrap();
     assert!(replay.status().is_success());
-    let replayed: Value = serde_json::from_slice(&replay.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    let replayed: Value =
+        serde_json::from_slice(&replay.into_body().collect().await.unwrap().to_bytes()).unwrap();
     assert_eq!(replayed["id"], created["id"]);
 
     // 3. 相同幂等键 + 不同参数返回 409 idempotency_key_conflict
@@ -84,7 +86,9 @@ async fn place_order_enforces_idempotency_limit_and_compensation(pool: PgPool) {
                 .header("Content-Type", "application/json")
                 .header("X-Buyer-Id", "buyer-demo")
                 .header("Idempotency-Key", "place-k1")
-                .body(Body::from(json!({ "item_id": item_id.as_uuid().to_string(), "quantity": 2 }).to_string()))
+                .body(Body::from(
+                    json!({ "item_id": item_id.as_uuid().to_string(), "quantity": 2 }).to_string(),
+                ))
                 .unwrap(),
         )
         .await
@@ -106,7 +110,9 @@ async fn place_order_enforces_idempotency_limit_and_compensation(pool: PgPool) {
         .await
         .unwrap();
     assert_eq!(over_limit.status(), StatusCode::CONFLICT);
-    let err: Value = serde_json::from_slice(&over_limit.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    let err: Value =
+        serde_json::from_slice(&over_limit.into_body().collect().await.unwrap().to_bytes())
+            .unwrap();
     assert_eq!(err["code"], "purchase_limit_exceeded");
 }
 
@@ -138,12 +144,15 @@ async fn pay_and_cancel_enforce_occ_ownership_and_release_quota(pool: PgPool) {
                 .header("Content-Type", "application/json")
                 .header("X-Buyer-Id", "buyer-demo")
                 .header("Idempotency-Key", "p1")
-                .body(Body::from(json!({ "item_id": item_id.as_uuid().to_string(), "quantity": 1 }).to_string()))
+                .body(Body::from(
+                    json!({ "item_id": item_id.as_uuid().to_string(), "quantity": 1 }).to_string(),
+                ))
                 .unwrap(),
         )
         .await
         .unwrap();
-    let order: Value = serde_json::from_slice(&placed.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    let order: Value =
+        serde_json::from_slice(&placed.into_body().collect().await.unwrap().to_bytes()).unwrap();
     let order_id = order["id"].as_str().unwrap();
 
     // 他人支付返回 403
@@ -179,7 +188,8 @@ async fn pay_and_cancel_enforce_occ_ownership_and_release_quota(pool: PgPool) {
         .await
         .unwrap();
     assert_eq!(paid.status(), StatusCode::OK);
-    let paid_json: Value = serde_json::from_slice(&paid.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    let paid_json: Value =
+        serde_json::from_slice(&paid.into_body().collect().await.unwrap().to_bytes()).unwrap();
     assert_eq!(paid_json["status"], "paid");
     assert_eq!(paid_json["version"], 2);
 
@@ -246,7 +256,9 @@ async fn expire_unpaid_orders_releases_stock_after_hold_duration(pool: PgPool) {
                 .header("Content-Type", "application/json")
                 .header("X-Buyer-Id", "buyer-demo")
                 .header("Idempotency-Key", "exp-1")
-                .body(Body::from(json!({ "item_id": item_id.as_uuid().to_string(), "quantity": 1 }).to_string()))
+                .body(Body::from(
+                    json!({ "item_id": item_id.as_uuid().to_string(), "quantity": 1 }).to_string(),
+                ))
                 .unwrap(),
         )
         .await

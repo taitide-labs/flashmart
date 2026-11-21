@@ -6,8 +6,8 @@ use http::{HeaderMap, HeaderValue, StatusCode, header};
 use uuid::Uuid;
 
 use crate::{
-    EventBus, FixedClock, InMemoryEventBus, ProblemDetails, SequenceIdGenerator,
-    extract_buyer_id, extract_idempotency_key,
+    EventBus, FixedClock, InMemoryEventBus, ProblemDetails, SequenceIdGenerator, extract_buyer_id,
+    extract_idempotency_key,
 };
 
 #[test]
@@ -40,9 +40,14 @@ fn header_extractors_enforce_buyer_and_idempotency_rules() {
     let mut valid = HeaderMap::new();
     valid.insert("X-Buyer-Id", HeaderValue::from_static("buyer-demo"));
     valid.insert("Idempotency-Key", HeaderValue::from_static("req-001"));
-    assert_eq!(extract_buyer_id(&valid, "/api/orders").unwrap().as_str(), "buyer-demo");
     assert_eq!(
-        extract_idempotency_key(&valid, "/api/orders").unwrap().as_str(),
+        extract_buyer_id(&valid, "/api/orders").unwrap().as_str(),
+        "buyer-demo"
+    );
+    assert_eq!(
+        extract_idempotency_key(&valid, "/api/orders")
+            .unwrap()
+            .as_str(),
         "req-001"
     );
 }

@@ -23,7 +23,10 @@ impl InMemoryEventBus {
     }
 
     pub fn clear(&self) {
-        self.events.write().expect("event bus lock poisoned").clear();
+        self.events
+            .write()
+            .expect("event bus lock poisoned")
+            .clear();
     }
 }
 

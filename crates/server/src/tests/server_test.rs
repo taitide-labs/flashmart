@@ -61,9 +61,7 @@ async fn health_endpoint_is_active_and_planned_slices_are_hidden() {
     let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json["status"], "ok");
 
-    let registered: BTreeSet<&str> = inventory::iter::<SliceDescriptor>()
-        .map(|d| d.id)
-        .collect();
+    let registered: BTreeSet<&str> = inventory::iter::<SliceDescriptor>().map(|d| d.id).collect();
     for expected in [
         "qry_list_flash_items",
         "qry_get_flash_item",

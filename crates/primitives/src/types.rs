@@ -26,7 +26,19 @@ pub enum PrimitiveError {
 macro_rules! uuid_id {
     ($name:ident, $doc:expr) => {
         #[doc = $doc]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, ToSchema)]
+        #[derive(
+            Debug,
+            Clone,
+            Copy,
+            PartialEq,
+            Eq,
+            Hash,
+            PartialOrd,
+            Ord,
+            Serialize,
+            Deserialize,
+            ToSchema,
+        )]
         #[serde(transparent)]
         pub struct $name(Uuid);
 
@@ -110,10 +122,7 @@ pub struct IdempotencyKey(String);
 impl IdempotencyKey {
     pub fn try_new(raw: impl AsRef<str>) -> Result<Self, PrimitiveError> {
         let trimmed = raw.as_ref().trim();
-        if trimmed.is_empty()
-            || trimmed.len() > 128
-            || trimmed.chars().any(|c| c.is_control())
-        {
+        if trimmed.is_empty() || trimmed.len() > 128 || trimmed.chars().any(|c| c.is_control()) {
             return Err(PrimitiveError::InvalidIdempotencyKey);
         }
         Ok(Self(trimmed.to_owned()))

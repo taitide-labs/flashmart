@@ -62,7 +62,11 @@ async fn concurrent_reservations_never_oversell(pool: PgPool) {
     assert_eq!(succeeded, 3);
     assert_eq!(insufficient, 7);
 
-    let snapshot = port.get_flash_item(ItemId::new(item_id)).await.unwrap().unwrap();
+    let snapshot = port
+        .get_flash_item(ItemId::new(item_id))
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(snapshot.available_stock, 0);
 }
 
@@ -132,7 +136,11 @@ async fn release_and_return_follow_sale_window_restock_rule(pool: PgPool) {
         .unwrap();
     assert!(released_replay.idempotent_replay);
 
-    let mid = port.get_flash_item(ItemId::new(item_id)).await.unwrap().unwrap();
+    let mid = port
+        .get_flash_item(ItemId::new(item_id))
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(mid.available_stock, 1);
 
     // 窗口结束后退回 res2 -> 仅记账归还，不再增加 available_stock
@@ -145,6 +153,10 @@ async fn release_and_return_follow_sale_window_restock_rule(pool: PgPool) {
         .unwrap();
     assert!(!returned.restocked_to_available);
 
-    let after = port.get_flash_item(ItemId::new(item_id)).await.unwrap().unwrap();
+    let after = port
+        .get_flash_item(ItemId::new(item_id))
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(after.available_stock, 1);
 }

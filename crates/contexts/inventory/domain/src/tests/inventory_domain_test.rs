@@ -18,7 +18,10 @@ fn sale_window_boundary_classification(#[case] offset_mins: i64, #[case] expecte
     let start = Utc.with_ymd_and_hms(2026, 11, 21, 12, 0, 0).unwrap();
     let end = start + Duration::minutes(60);
     let window = SaleWindow::try_new(start, end).unwrap();
-    assert_eq!(window.status_at(start + Duration::minutes(offset_mins)), expected);
+    assert_eq!(
+        window.status_at(start + Duration::minutes(offset_mins)),
+        expected
+    );
 }
 
 #[test]

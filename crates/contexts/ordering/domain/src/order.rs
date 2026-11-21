@@ -1,8 +1,7 @@
 use chrono::{DateTime, Utc};
 use flashmart_contracts::{IntegrationEvent, OrderLifecycleStatus};
 use flashmart_primitives::{
-    BuyerId, Currency, ItemId, ItemKind, MoneyCents, OrderId, OrderVersion, Quantity,
-    ReservationId,
+    BuyerId, Currency, ItemId, ItemKind, MoneyCents, OrderId, OrderVersion, Quantity, ReservationId,
 };
 
 use crate::{OrderingDomainError, PaymentHoldDuration};
@@ -40,9 +39,15 @@ impl OrderState {
     pub fn payment_deadline(self) -> DateTime<Utc> {
         match self {
             Self::PendingPayment { payment_deadline }
-            | Self::Paid { payment_deadline, .. }
-            | Self::Cancelled { payment_deadline, .. }
-            | Self::Expired { payment_deadline, .. } => payment_deadline,
+            | Self::Paid {
+                payment_deadline, ..
+            }
+            | Self::Cancelled {
+                payment_deadline, ..
+            }
+            | Self::Expired {
+                payment_deadline, ..
+            } => payment_deadline,
         }
     }
 }

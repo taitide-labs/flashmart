@@ -1,8 +1,7 @@
 use chrono::{Duration, TimeZone, Utc};
 use flashmart_contracts::{IntegrationEvent, OrderLifecycleStatus};
 use flashmart_primitives::{
-    BuyerId, Currency, ItemId, ItemKind, MoneyCents, OrderId, OrderVersion, Quantity,
-    ReservationId,
+    BuyerId, Currency, ItemId, ItemKind, MoneyCents, OrderId, OrderVersion, Quantity, ReservationId,
 };
 use rstest::rstest;
 use uuid::Uuid;
@@ -61,7 +60,11 @@ fn place_and_pay_within_hold_generates_fulfillment_hint_and_bumps_version() {
     assert!(matches!(event, IntegrationEvent::FlashOrderPaid { .. }));
     assert_eq!(order.version().get(), 2);
     assert!(matches!(order.state(), OrderState::Paid { .. }));
-    assert!(order.fulfillment_hint().starts_with("模拟数字兑换码：FM-DIGI-"));
+    assert!(
+        order
+            .fulfillment_hint()
+            .starts_with("模拟数字兑换码：FM-DIGI-")
+    );
 }
 
 #[test]
@@ -76,7 +79,11 @@ fn pay_rejects_wrong_owner_stale_version_and_overdue_deadline() {
         Err(OrderingDomainError::OwnershipMismatch)
     );
     assert_eq!(
-        order.pay(&buyer, OrderVersion::try_new(2).unwrap(), t0 + Duration::minutes(1)),
+        order.pay(
+            &buyer,
+            OrderVersion::try_new(2).unwrap(),
+            t0 + Duration::minutes(1)
+        ),
         Err(OrderingDomainError::VersionConflict {
             expected: 2,
             actual: 1
@@ -104,12 +111,20 @@ fn cancel_supports_both_pending_and_paid_orders_and_blocks_double_cancel() {
     paid.pay(&buyer, OrderVersion::INITIAL, t0 + Duration::minutes(1))
         .unwrap();
     let (was_paid, _) = paid
-        .cancel(&buyer, OrderVersion::try_new(2).unwrap(), t0 + Duration::minutes(3))
+        .cancel(
+            &buyer,
+            OrderVersion::try_new(2).unwrap(),
+            t0 + Duration::minutes(3),
+        )
         .unwrap();
     assert!(was_paid);
     assert_eq!(paid.version().get(), 3);
     assert!(matches!(
-        paid.cancel(&buyer, OrderVersion::try_new(3).unwrap(), t0 + Duration::minutes(4)),
+        paid.cancel(
+            &buyer,
+            OrderVersion::try_new(3).unwrap(),
+            t0 + Duration::minutes(4)
+        ),
         Err(OrderingDomainError::InvalidOrderState { .. })
     ));
 }
@@ -124,7 +139,12 @@ fn expire_requires_deadline_elapsed() {
         Err(OrderingDomainError::NotDueForExpiration)
     );
 
-    let ev = order.expire(t0 + Duration::minutes(15) + Duration::seconds(1)).unwrap();
+    let ev = order
+        .expire(t0 + Duration::minutes(15) + Duration::seconds(1))
+        .unwrap();
     assert!(matches!(ev, IntegrationEvent::FlashOrderExpired { .. }));
-    assert_eq!(order.state().lifecycle_status(), OrderLifecycleStatus::Expired);
+    assert_eq!(
+        order.state().lifecycle_status(),
+        OrderLifecycleStatus::Expired
+    );
 }

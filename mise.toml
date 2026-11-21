@@ -1,0 +1,22 @@
+[tools]
+rust = "stable"
+bun = "1.4.4"
+ast-grep = "0.51.3"
+
+[env]
+DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres"
+
+[tasks.fmt]
+description = "Format Rust workspace code"
+run = "cargo fmt --all"
+
+[tasks.check]
+description = "Run architecture rules, formatting, clippy, workspace tests, and web checks"
+run = [
+  "ast-grep scan",
+  "cargo fmt --all -- --check",
+  "cargo clippy --workspace --all-targets -- -D warnings",
+  "cargo test --workspace",
+  "bun run --cwd web test",
+  "bun run --cwd web build",
+]
