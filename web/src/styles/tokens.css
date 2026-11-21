@@ -1,0 +1,162 @@
+/* FlashMart 设计令牌唯一事实源：亮暗主题键值必须严格对称 */
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* 字体与排印 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+
+  /* 空间尺度（4px 基准） */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* 同心圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  /* 动效令牌 */
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 亮色表面色阶 */
+  --bg-canvas: #f5f5f4;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f0f0ee;
+  --bg-elevated: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-scrim: rgba(17, 17, 16, 0.42);
+
+  /* 文字色阶 */
+  --text-primary: #141413;
+  --text-secondary: #52524e;
+  --text-muted: #787872;
+  --text-on-accent: #ffffff;
+
+  /* 边框与分割线 */
+  --border-default: #e2e2de;
+  --border-strong: #c8c8c2;
+  --border-highlight: rgba(255, 255, 255, 0.9);
+
+  /* 单一抢购强调色（Teenage Engineering 精密工业橙） */
+  --accent-primary: #ea4c0b;
+  --accent-primary-hover: #d14006;
+  --accent-primary-active: #b53604;
+  --accent-subtle: rgba(234, 76, 11, 0.1);
+  --accent-border: rgba(234, 76, 11, 0.28);
+
+  /* 语义状态色 */
+  --status-success-text: #156d3f;
+  --status-success-bg: #ebf7f0;
+  --status-success-border: #bfe5ce;
+
+  --status-warning-text: #945200;
+  --status-warning-bg: #fef5e7;
+  --status-warning-border: #f5d8a8;
+
+  --status-danger-text: #b42318;
+  --status-danger-bg: #fef0ee;
+  --status-danger-border: #f7c7c2;
+
+  /* 表面阴影与焦点环 */
+  --shadow-surface: 0 1px 2px rgba(20, 20, 19, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-elevated: 0 14px 36px rgba(20, 20, 19, 0.14), 0 2px 6px rgba(20, 20, 19, 0.06);
+  --focus-ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent-primary);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 暗色表面色阶 */
+  --bg-canvas: #0f1011;
+  --bg-surface: #17181a;
+  --bg-subtle: #1f2124;
+  --bg-elevated: #222428;
+  --bg-glass: rgba(23, 24, 26, 0.86);
+  --bg-scrim: rgba(0, 0, 0, 0.66);
+
+  /* 文字色阶 */
+  --text-primary: #f3f3f1;
+  --text-secondary: #b4b5b0;
+  --text-muted: #82847f;
+  --text-on-accent: #ffffff;
+
+  /* 边框与分割线 */
+  --border-default: #2b2d31;
+  --border-strong: #3e4147;
+  --border-highlight: rgba(255, 255, 255, 0.08);
+
+  /* 单一抢购强调色 */
+  --accent-primary: #ff5d1f;
+  --accent-primary-hover: #ff733d;
+  --accent-primary-active: #e04a10;
+  --accent-subtle: rgba(255, 93, 31, 0.16);
+  --accent-border: rgba(255, 93, 31, 0.36);
+
+  /* 语义状态色 */
+  --status-success-text: #6ce3a0;
+  --status-success-bg: rgba(22, 163, 74, 0.16);
+  --status-success-border: rgba(108, 227, 160, 0.3);
+
+  --status-warning-text: #f7c266;
+  --status-warning-bg: rgba(217, 119, 6, 0.16);
+  --status-warning-border: rgba(247, 194, 102, 0.3);
+
+  --status-danger-text: #ff8b80;
+  --status-danger-bg: rgba(220, 38, 38, 0.18);
+  --status-danger-border: rgba(255, 139, 128, 0.32);
+
+  /* 表面阴影与焦点环 */
+  --shadow-surface: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-elevated: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --focus-ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent-primary);
+}
