@@ -43,9 +43,10 @@ impl InventoryPort for PgInventoryPort {
 
     async fn get_flash_item(
         &self,
-        _item_id: ItemId,
+        item_id: ItemId,
     ) -> Result<Option<FlashItemSnapshot>, InventoryPortError> {
-        Err(InventoryPortError::NotImplemented("qry_get_flash_item"))
+        crate::qry_get_flash_item::handler::get_snapshot(&self.pool, item_id, self.clock.now())
+            .await
     }
 
     async fn reserve_stock(
