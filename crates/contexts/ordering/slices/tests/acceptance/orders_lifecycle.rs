@@ -16,7 +16,6 @@ use uuid::Uuid;
 use super::support::{SeedItem, base_time, test_router, test_state};
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn place_order_enforces_idempotency_limit_and_compensation(pool: PgPool) {
     let now = base_time();
     let clock = Arc::new(FixedClock::new(now));
