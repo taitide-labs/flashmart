@@ -85,7 +85,6 @@ async fn list_flash_items_returns_window_status_and_server_time(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../../../migrations")]
-#[ignore = "wip"]
 async fn get_flash_item_returns_404_problem_details_when_missing(pool: PgPool) {
     let clock = Arc::new(FixedClock::new(base_time()));
     let (state, _) = test_state(pool, clock);
